@@ -1,0 +1,18 @@
+command qui ne peut pas etre automatisé :
+microk8s helm3 upgrade --install sck \
+  --set="clusterName=<cluster_name>" \
+  --set="splunkPlatform.endpoint=<splunk_endpoint>" \
+  --set="splunkPlatform.insecureSkipVerify=<insecure_skip_verify>" \
+  --set="splunkPlatform.token=<splunk_token>" \
+  --set="splunkPlatform.metricsEnabled=true" \
+  --set="splunkPlatform.metricsIndex=em_metrics" \
+  --set="splunkPlatform.index=em_logs" \
+  splunk-otel-collector-chart/splunk-otel-collector
+
+
+
+modifier le fichier snmpd.conf du linux pour authoriser la collect.
+verifier le path des indexes... problem de variable $splunkhome
+ajouter reboot splunk srv apres creation des index => done
+Priorite8 => mettre un mot de passe a OpenWRT
+Priorité 9 => automatiser la config Portforwarding OpenWRT

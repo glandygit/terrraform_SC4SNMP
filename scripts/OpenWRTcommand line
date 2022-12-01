@@ -1,0 +1,4 @@
+opkg update
+opkg install snmpd
+opkg install luci-app-snmpd
+reboot
