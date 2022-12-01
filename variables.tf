@@ -66,9 +66,7 @@ variable "splunk_ITSI_license_file_name" {
 ### Splunk ITSI Variables ###
 
 
-variable "splunk_itsi_version" {
-  default = "4.13.1"
-}
+
 variable "splunk_app_for_content_packs_filename" {
   ## default = "splunk-app-for-content-packs_170.spl"
   default = "splunk-app-for-content-packs_180.spl"
@@ -76,6 +74,9 @@ variable "splunk_app_for_content_packs_filename" {
 variable "splunk_it_service_intelligence_filename" {
   ## default = "splunk-it-service-intelligence_4131.spl"
   default = "splunk-it-service-intelligence_4150.spl"
+}
+variable "splunk_itsi_version" {
+  default = "4.15"
 }
 variable "splunk_synthetic_monitoring_add_on_filename" {
   default = "splunk-synthetic-monitoring-add-on_110.tgz"
