@@ -243,6 +243,14 @@ ingress {
     protocol         = "tcp"
    # cidr_blocks      = [aws_vpc.SC4SNMP.cidr_block]
  cidr_blocks      =  ["0.0.0.0/0"]
+   }
+  ingress {
+    description      = "minilinux_ssh"
+    from_port        = 8022
+    to_port          = 8022
+    protocol         = "tcp"
+   # cidr_blocks      = [aws_vpc.SC4SNMP.cidr_block]
+ cidr_blocks      =  ["0.0.0.0/0"]
   }
   egress {
     from_port        = 0
@@ -260,7 +268,8 @@ ingress {
 ## --------------- Create OpenWrt instance -------------------##
 resource "aws_instance" "Openwrt" {
  #ami           = "ami-043ed0998d147c176"
- ami           = "ami-0fac7389be786f63a" ##V4 current paris   
+ #ami           = "ami-0fac7389be786f63a" ##V4 current paris   
+  ami           = "ami-0cfe9718b7dd79c4d"
    #ami           = "ami-0fac7389be786f63a" ##V4 current dublin 
   instance_type = "t2.micro"
   tags = {
@@ -362,10 +371,62 @@ resource "aws_instance" "linux1" {
     Name = "linux1"
     Workspace = terraform.workspace
   }
+  ## - ---------------------------- end script minilinux-----------
 }
+resource "null_resource" "scriptexec_minilinux" {
+  provisioner "remote-exec" {
+      connection {
+    host = aws_eip.WAN_eip.public_ip
+    port = 8022
+    type = "ssh"
+    user = var.ec2_ssh_user
+    private_key = file(var.paris_private_key_path)
+    agent = "false"
+  }
+  
+    inline = [
+   ## Create Splunk Ent Vars
+      
+      "sudo yum update -y",
+      "sudo yum upgrade -y",
+      "sudo yum -y install net-snmp net-snmpd-utils",
+      "sudo systemctl enable snmpd",
+      "sudo systemctl status snmpd",
+      "sudo systemctl start snmpd",
+      
 
 
+    # create temp licenses folder
+     # "sudo rmdir -d -y -f /home/${var.ec2_ssh_user}/licenses/",
+      # "sudo mkdir /home/${var.ec2_ssh_user}/licenses/",
+       #"sudo chown ec2-user:ec2-user /home/${var.ec2_ssh_user}/licenses",
+             ]
+  }
+  provisioner "local-exec" {
+    # copy snmpd.conf to the remote srv
+      command = "scp  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -q -P 8022  -i ${var.paris_private_key_path} -r ./config_files/snmpd.conf  ${var.ec2_ssh_user}@${aws_eip.WAN_eip.public_ip}:/home/${var.ec2_ssh_user}"
+      }
+ provisioner "remote-exec" {
+      connection {
+    host = aws_eip.WAN_eip.public_ip
+    port = 8022
+    type = "ssh"
+    user = var.ec2_ssh_user
+    private_key = file(var.paris_private_key_path)
+    agent = "false"
+  }     
+ inline = [
+   ## copy snmpd.conf
+ 
+      "sudo  cp -rf /home/${var.ec2_ssh_user}/snmpd.conf /etc/snmp/snmpd.conf",
+      "sudo chown root:root /etc/snmp/snmpd.conf",
+      "sudo systemctl stop snmpd",
+      "sudo systemctl start snmpd",
+      ]
+}
+  ## - ---------------------------- end script minilinux-----------
 
+}
 
 ## --------------- Provision Windows instance dual attachement LAN / WAN (for troubleshooting) -------------------##
 
